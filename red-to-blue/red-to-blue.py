@@ -220,14 +220,14 @@ def solve_mp_div():
 
     input("\nPress enter to exit . . .")
 
+if __name__ == "__main__":
+  s = input("Enter a method of solution. (lin, mp-per, mp-div)\n> ")
+  while s != "lin" and s != "mp-per" and s != "mp-div":
+      s = input("You have entered an invalid option.\n> ")
 
-s = input("Enter a method of solution. (lin, mp-per, mp-div)\n> ")
-while s != "lin" and s != "mp-per" and s != "mp-div":
-    s = input("You have entered an invalid option.\n> ")
-
-if s == "lin":
-    solve_linear()
-if s == "mp-per":
-    solve_mp_per()
-if s == "mp-div":
-    solve_mp_div()
+  if s == "lin":
+      solve_linear()
+  if s == "mp-per":
+      solve_mp_per()
+  if s == "mp-div":
+      solve_mp_div()
