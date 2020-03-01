@@ -63,23 +63,27 @@ def trigger_node(mat, coord):
 
 
 def is_solved(mat):
-    for i in [j for i in mat for j in i]:
-        if not i:
-            return False
-    return True
+    flat_mat = [j for i in mat for j in i]
+    return True if sum(flat_mat) == len(flat_mat) else False
 
 
-# Used for multiprocessing (where each task gets a process)
-def try_combination(x_size, size, initial_mat, combination, solved, queue):
-    current_mat = copy.deepcopy(initial_mat)
-
+def try_to_solve(current_mat, combination):
     binary_combination = f"{combination:b}"
-    binary_combination = '0' * (size - len(binary_combination)) + binary_combination
+    binary_combination = '0' * (len(current_mat) * len(current_mat[0]) - len(binary_combination)) + binary_combination
 
     trigger_map = [True if i == '1' else False for i in binary_combination][::-1]
     for i in range(len(trigger_map)):
         if trigger_map[i]:
             current_mat = trigger_node(current_mat, i)
+
+    return binary_combination
+
+
+# Used for multiprocessing (where each task gets a process)
+def try_combination(x_size, initial_mat, combination, solved, queue):
+    current_mat = copy.deepcopy(initial_mat)
+
+    binary_combination = try_to_solve(current_mat, combination)
 
     if is_solved(current_mat):
         solved.set()
@@ -89,26 +93,21 @@ def try_combination(x_size, size, initial_mat, combination, solved, queue):
 
 
 # Used for multiprocessing (where tasks are divided between few processes)
-def try_combinations(x_size, size, initial_mat, combinations, solved, queue):
-    for combination in combinations:
-        try_combination(x_size, size, initial_mat, combination, solved, queue)
+def try_combinations(x_size, initial_mat, max_combination, offset, increment, solved, queue):
+    i = offset
+    while i <= max_combination and queue.qsize() <= 1:
+        try_combination(x_size, initial_mat, i, solved, queue)
+        i += increment
 
 
-def solve_linear(x_size, size, initial_mat):
-    max_combination = 2 ** size
-
+def solve_linear(x_size, initial_mat):
+    max_combination = 2 ** (len(initialMat) * len(initialMat[0]))
     combination = 0
 
     while combination < max_combination:
         current_mat = copy.deepcopy(initial_mat)
 
-        binary_combination = f"{combination:b}";
-        binary_combination = '0' * (size - len(binary_combination)) + binary_combination
-
-        trigger_map = [True if i == '1' else False for i in binary_combination][::-1]
-        for i in range(len(trigger_map)):
-            if trigger_map[i]:
-                current_mat = trigger_node(current_mat, i)
+        binary_combination = try_to_solve(current_mat, combination)
 
         if is_solved(current_mat):
             s = binary_combination[::-1]
@@ -119,16 +118,16 @@ def solve_linear(x_size, size, initial_mat):
         combination += 1
 
 
-def solve_mp_per(x_size, size, initial_mat, queue):
-    max_combination = 2 ** size
+def solve_mp_per(x_size, initial_mat, queue):
+    max_combination = 2 ** (len(initialMat) * len(initialMat[0]))
 
     is_solved = mp.Event()
     processes = []
 
     for i in range(max_combination):
-        p = Process(target=try_combination, args=(x_size, size, initial_mat, i, is_solved, queue))
+        p = Process(target=try_combination, args=(x_size, initial_mat, i, is_solved, queue))
         p.start()
-        # p.join()
+        p.join()
         processes.append(p)
 
     is_solved.wait()
@@ -136,33 +135,28 @@ def solve_mp_per(x_size, size, initial_mat, queue):
     for i in processes:
         i.kill()
         # i.terminate()
-        i.join()
 
 
-def solve_mp_div(x_size, size, initial_mat, queue):
-    max_combination = 2 ** size
+def solve_mp_div(x_size, initial_mat, queue):
+    max_combination = 2 ** (len(initialMat) * len(initialMat[0]))
 
     is_solved = mp.Event()
     processes = []
 
-    cpu_count = os.cpu_count()
-    # TODO: This way, the code uses too much memory; find a better way to split the list between processes.
-    # TODO: Use xrange(cpuCount)
-    chunks = [[i for i in range(max_combination)][i::cpu_count] for i in range(cpu_count)]
+    process_count = os.cpu_count()
 
-    for i in range(len(chunks)):
-        p = Process(target=try_combinations, args=(x_size, size, initial_mat, chunks[0], is_solved, queue))
+    for i in range(process_count):
+        p = Process(target=try_combinations,
+                    args=(x_size, initial_mat, max_combination, i, process_count, is_solved, queue))
         p.start()
         p.join()
         processes.append(p)
-        chunks = chunks[1::]
 
     is_solved.wait()
 
     for i in processes:
         i.kill()
         # i.terminate()
-        i.join()
 
 
 def print_solution(solution, x_size, queue):
@@ -184,42 +178,28 @@ def print_solution(solution, x_size, queue):
 if __name__ == "__main__":
     mp.freeze_support()
 
-    # firstRun = True
     while True:
-        # if firstRun:
-        #     s = input("Enter a method of solution. (lin, mp-per, mp-div)\n> ")
-        #     while s != "lin" and s != "mp-per" and s != "mp-div":
-        #         s = input("You have entered an invalid option.\n> ")
-        # else:
-        #     s = "lin"
-        #     print("This is not the program's first solution; therefore, multiprocessing is disabled.")
-        #     print("If you would like to solve using multiprocessing, restart the program.")
-        #
-        # firstRun = False
-
-        s = input("Enter a method of solution. (lin, mp-per, mp-div)\n> ")
+        s = input("Enter a method of solution. (lin, mp-per, mp-div)\n> ").lower()
         while s != "lin" and s != "mp-per" and s != "mp-div":
-            s = input("You have entered an invalid option.\n> ")
+            s = input("You have entered an invalid option.\n> ").lower()
 
         xSize = get_pint("Enter the WIDTH of the puzzle.")
         ySize = get_pint("Enter the HEIGHT of the puzzle.")
         initialMat = get_mat(xSize, ySize, "Enter, in matrix form, the puzzle to be solved.")
 
-        size = xSize * ySize
-
         print("\nSolving...", end='')
 
         if s == "lin":
             computationStartTime = time.time()
-            solve_linear(xSize, size, initialMat)
+            solve_linear(xSize, initialMat)
         else:
             q = mp.Queue()
             q.put(time.time())
 
             if s == "mp-per":
-                solve_mp_per(xSize, size, initialMat, q)
+                solve_mp_per(xSize, initialMat, q)
             if s == "mp-div":
-                solve_mp_div(xSize, size, initialMat, q)
+                solve_mp_div(xSize, initialMat, q)
 
         s = input("\nWould you like to solve another puzzle? (y/n)\n> ").lower()
         while s != "y" and s != "n" and s != "yes" and s != "no":
