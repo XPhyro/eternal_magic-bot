@@ -32,7 +32,7 @@ def get_mat(x_size, y_size, msg):
 
     while len(s) != size:
         r = ''.join([i if i == '0' or i == '1' else '' for i in input("> ").replace('r', '0').replace('b', '1')])
-        if len(r) == x_size:
+        if len(r) == x_size or (len(r) == size and len(s) == 0):
             s += r
 
     m = re.findall('.' * x_size, s)
@@ -63,7 +63,6 @@ def trigger_node(mat, coord):
         for j in range(x_size):
             mat[i][j] = flat_mat[0]
             del flat_mat[0]
-    return mat
 
 
 def is_solved(mat):
@@ -71,36 +70,28 @@ def is_solved(mat):
     return True if sum(flat_mat) == len(flat_mat) else False
 
 
-def try_to_solve(current_mat, combination):
+def try_solution(current_mat, combination):
     binary_combination = f"{combination:b}"
     binary_combination = '0' * (len(current_mat) * len(current_mat[0]) - len(binary_combination)) + binary_combination
 
-    trigger_map = [True if i == '1' else False for i in binary_combination][::-1]
+    trigger_map = binary_combination[::-1]
+
     for i in range(len(trigger_map)):
-        if trigger_map[i]:
-            current_mat = trigger_node(current_mat, i)
+        if trigger_map[i] == '1':
+            trigger_node(current_mat, i)
 
     return binary_combination
-
-
-def try_combination(initial_mat, combination):
-    current_mat = copy.deepcopy(initial_mat)
-
-    binary_combination = try_to_solve(current_mat, combination)
-
-    if is_solved(current_mat):
-        return binary_combination[::-1]
-
-    return False
 
 
 def try_combinations(x_size, initial_mat, max_combination, offset, increment, solved, queue):
     i = offset
     while i <= max_combination and not solved.is_set():
-        solution = try_combination(initial_mat, i)
-        if solution:
+        current_mat = copy.deepcopy(initial_mat)
+        binary_combination = try_solution(current_mat, i)
+
+        if is_solved(current_mat):
             solved.set()
-            print_solution(solution, x_size, queue)
+            print_solution(binary_combination[::-1], x_size, queue)
         i += increment
 
 
@@ -111,7 +102,7 @@ def solve_linear(x_size, initial_mat):
     while combination < max_combination:
         current_mat = copy.deepcopy(initial_mat)
 
-        binary_combination = try_to_solve(current_mat, combination)
+        binary_combination = try_solution(current_mat, combination)
 
         if is_solved(current_mat):
             s = binary_combination[::-1]
@@ -153,7 +144,10 @@ def print_solution(solution, x_size, queue=None):
     end_time = time.time()
     time_taken = end_time - computationStartTime
 
-    print('\n\n' + '\n'.join(solution[i:i + x_size] for i in range(0, len(solution), x_size)))
+    print("\n\nMulti-line solution: ")
+    print('\n'.join(solution[i:i + x_size] for i in range(0, len(solution), x_size)))
+    print("\nSingle-line solution:")
+    print(' '.join(solution[i:i + x_size] for i in range(0, len(solution), x_size)))
 
     print(f"\nStart time: {computationStartTime}")
     print(f"End time: {end_time}")
