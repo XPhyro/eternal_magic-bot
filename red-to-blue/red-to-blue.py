@@ -83,7 +83,8 @@ def try_solution(current_mat, combination):
     return binary_combination
 
 
-def try_combinations(x_size, initial_mat, max_combination, offset, increment, solved, queue):
+def try_combinations(initial_mat, max_combination, offset, increment, solved, queue):
+    x_size = len(initial_mat[0])
     i = offset
     while i <= max_combination and not solved.is_set():
         current_mat = copy.deepcopy(initial_mat)
@@ -95,8 +96,9 @@ def try_combinations(x_size, initial_mat, max_combination, offset, increment, so
         i += increment
 
 
-def solve_linear(x_size, initial_mat):
-    max_combination = 2 ** (len(initialMat) * len(initialMat[0]))
+def solve_linear(initial_mat):
+    x_size = len(initial_mat[0])
+    max_combination = 2 ** (len(initialMat) * x_size)
     combination = 0
 
     while combination < max_combination:
@@ -113,7 +115,7 @@ def solve_linear(x_size, initial_mat):
         combination += 1
 
 
-def solve_mp_div(x_size, initial_mat, queue):
+def solve_mp_div(initial_mat, queue):
     max_combination = 2 ** (len(initialMat) * len(initialMat[0]))
 
     is_solved = mp.Event()
@@ -123,7 +125,7 @@ def solve_mp_div(x_size, initial_mat, queue):
 
     for i in range(process_count):
         p = Process(target=try_combinations,
-                    args=(x_size, initial_mat, max_combination, i, process_count, is_solved, queue))
+                    args=(initial_mat, max_combination, i, process_count, is_solved, queue))
         p.start()
         p.join()
         processes.append(p)
@@ -170,11 +172,11 @@ if __name__ == "__main__":
 
         if s == "lin":
             computationStartTime = time.time()
-            solve_linear(xSize, initialMat)
+            solve_linear(initialMat)
         if s == "mp":
             q = mp.Queue()
             q.put(time.time())
-            solve_mp_div(xSize, initialMat, q)
+            solve_mp_div(initialMat, q)
 
         s = input("\nWould you like to solve another puzzle? (y/n)\n> ").lower()
         while s != "y" and s != "n" and s != "yes" and s != "no":
