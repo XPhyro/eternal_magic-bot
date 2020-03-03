@@ -10,13 +10,13 @@ def get_pint(msg):
     s = input(msg + "\n> ")
     try:
         s = float(s)
-    except:
-        s = get_pint("The entered string is not a valid NUMBER.")
+    except ValueError:
+        return get_pint("The entered string is not a valid NUMBER.")
     i = int(s)
     if s != i:
-        i = get_pint("You must enter an INTEGER.")
+        return get_pint("You must enter an INTEGER.")
     if i <= 0:
-        i = get_pint("The entered integer must be POSITIVE.")
+        return get_pint("The entered integer must be POSITIVE.")
 
     return i
 
@@ -25,11 +25,15 @@ def get_mat(x_size, y_size, msg):
     if x_size <= 0 or y_size <= 0:
         return []
 
-    s = input(msg + "\n> ")
-    s = s.replace('r', '0').replace('b', '1')
-    s = ''.join([i if i == '0' or i == '1' else '' for i in s])
-    if len(s) != x_size * y_size:
-        return get_mat(x_size, y_size, "The size of the interpreted matrix is inconsistent, try again.")
+    size = x_size * ySize
+    s = ""
+
+    print(msg)
+
+    while len(s) != size:
+        r = ''.join([i if i == '0' or i == '1' else '' for i in input("> ").replace('r', '0').replace('b', '1')])
+        if len(r) == x_size:
+            s += r
 
     m = re.findall('.' * x_size, s)
     for i in range(len(m)):
@@ -42,21 +46,21 @@ def get_mat(x_size, y_size, msg):
 
 
 def trigger_node(mat, coord):
-    outer_size = len(mat)
-    inner_size = len(mat[0])
+    y_size = len(mat)
+    x_size = len(mat[0])
 
     flat_mat = [j for i in mat for j in i]
-    coords_to_toggle = [coord, coord - inner_size, coord + inner_size]
-    if coord % inner_size != 0:
+    coords_to_toggle = [coord, coord - x_size, coord + x_size]
+    if coord % x_size != 0:
         coords_to_toggle.append(coord - 1)
-    if coord % inner_size != inner_size - 1:
+    if coord % x_size != x_size - 1:
         coords_to_toggle.append(coord + 1)
 
     for i in coords_to_toggle:
-        if 0 <= i < outer_size * inner_size:
+        if 0 <= i < y_size * x_size:
             flat_mat[i] = not flat_mat[i]
-    for i in range(outer_size):
-        for j in range(inner_size):
+    for i in range(y_size):
+        for j in range(x_size):
             mat[i][j] = flat_mat[0]
             del flat_mat[0]
     return mat
@@ -79,24 +83,24 @@ def try_to_solve(current_mat, combination):
     return binary_combination
 
 
-# Used for multiprocessing (where each task gets a process)
-def try_combination(x_size, initial_mat, combination, solved, queue):
+def try_combination(initial_mat, combination):
     current_mat = copy.deepcopy(initial_mat)
 
     binary_combination = try_to_solve(current_mat, combination)
 
     if is_solved(current_mat):
-        solved.set()
-        s = binary_combination[::-1]
-        print_solution(s, x_size, queue)
-        return
+        return binary_combination[::-1]
+
+    return False
 
 
-# Used for multiprocessing (where tasks are divided between few processes)
 def try_combinations(x_size, initial_mat, max_combination, offset, increment, solved, queue):
     i = offset
-    while i <= max_combination and queue.qsize() <= 1:
-        try_combination(x_size, initial_mat, i, solved, queue)
+    while i <= max_combination and not solved.is_set():
+        solution = try_combination(initial_mat, i)
+        if solution:
+            solved.set()
+            print_solution(solution, x_size, queue)
         i += increment
 
 
@@ -111,30 +115,11 @@ def solve_linear(x_size, initial_mat):
 
         if is_solved(current_mat):
             s = binary_combination[::-1]
-            print_solution(s, x_size, None)
+            print_solution(s, x_size)
 
             break
 
         combination += 1
-
-
-def solve_mp_per(x_size, initial_mat, queue):
-    max_combination = 2 ** (len(initialMat) * len(initialMat[0]))
-
-    is_solved = mp.Event()
-    processes = []
-
-    for i in range(max_combination):
-        p = Process(target=try_combination, args=(x_size, initial_mat, i, is_solved, queue))
-        p.start()
-        p.join()
-        processes.append(p)
-
-    is_solved.wait()
-
-    for i in processes:
-        i.kill()
-        # i.terminate()
 
 
 def solve_mp_div(x_size, initial_mat, queue):
@@ -159,7 +144,7 @@ def solve_mp_div(x_size, initial_mat, queue):
         # i.terminate()
 
 
-def print_solution(solution, x_size, queue):
+def print_solution(solution, x_size, queue=None):
     global computationStartTime
 
     if queue is not None:
@@ -179,8 +164,8 @@ if __name__ == "__main__":
     mp.freeze_support()
 
     while True:
-        s = input("Enter a method of solution. (lin, mp-per, mp-div)\n> ").lower()
-        while s != "lin" and s != "mp-per" and s != "mp-div":
+        s = input("Enter a method of solution. (lin, mp)\n> ").lower()
+        while s != "lin" and s != "mp":
             s = input("You have entered an invalid option.\n> ").lower()
 
         xSize = get_pint("Enter the WIDTH of the puzzle.")
@@ -192,19 +177,15 @@ if __name__ == "__main__":
         if s == "lin":
             computationStartTime = time.time()
             solve_linear(xSize, initialMat)
-        else:
+        if s == "mp":
             q = mp.Queue()
             q.put(time.time())
-
-            if s == "mp-per":
-                solve_mp_per(xSize, initialMat, q)
-            if s == "mp-div":
-                solve_mp_div(xSize, initialMat, q)
+            solve_mp_div(xSize, initialMat, q)
 
         s = input("\nWould you like to solve another puzzle? (y/n)\n> ").lower()
         while s != "y" and s != "n" and s != "yes" and s != "no":
             s = input("You have entered an invalid option.\n> ").lower()
 
-        if s[0] == "n":
+        if s[0] == 'n':
             input("Press enter to exit...")
             break
