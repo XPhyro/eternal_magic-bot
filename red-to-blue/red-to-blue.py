@@ -1,7 +1,6 @@
 import copy
-import os
-from multiprocessing import Process
 import multiprocessing as mp
+import os
 import re
 import time
 
@@ -124,8 +123,8 @@ def solve_mp_div(initial_mat, queue):
     process_count = os.cpu_count()
 
     for i in range(process_count):
-        p = Process(target=try_combinations,
-                    args=(initial_mat, max_combination, i, process_count, is_solved, queue))
+        p = mp.Process(target=try_combinations,
+                       args=(initial_mat, max_combination, i, process_count, is_solved, queue))
         p.start()
         p.join()
         processes.append(p)

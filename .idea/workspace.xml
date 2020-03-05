@@ -2,7 +2,8 @@
 <project version="4">
   <component name="ChangeListManager">
     <list default="true" id="fa8ceefc-58de-45c5-a632-f2794db8e666" name="Default Changelist" comment="">
-      <change beforePath="$PROJECT_DIR$/README.md" beforeDir="false" afterPath="$PROJECT_DIR$/README.md" afterDir="false" />
+      <change beforePath="$PROJECT_DIR$/.idea/workspace.xml" beforeDir="false" afterPath="$PROJECT_DIR$/.idea/workspace.xml" afterDir="false" />
+      <change beforePath="$PROJECT_DIR$/red-to-blue/red-to-blue.py" beforeDir="false" afterPath="$PROJECT_DIR$/red-to-blue/red-to-blue.py" afterDir="false" />
     </list>
     <option name="EXCLUDED_CONVERTED_TO_IGNORED" value="true" />
     <option name="SHOW_DIALOG" value="false" />
@@ -44,7 +45,7 @@
     <property name="node.js.path.for.package.tslint" value="project" />
     <property name="node.js.selected.package.eslint" value="(autodetect)" />
     <property name="node.js.selected.package.tslint" value="(autodetect)" />
-    <property name="settings.editor.selected.configurable" value="editor.preferences.fonts.default" />
+    <property name="settings.editor.selected.configurable" value="com.jetbrains.python.configuration.PyActiveSdkModuleConfigurable" />
   </component>
   <component name="PyConsoleOptionsProvider">
     <option name="myShowVariablesByDefault" value="false" />
@@ -156,7 +157,10 @@
       <workItem from="1583087936012" duration="1109000" />
       <workItem from="1583089602799" duration="2534000" />
       <workItem from="1583101638160" duration="1191000" />
-      <workItem from="1583233669168" duration="15458000" />
+      <workItem from="1583233669168" duration="17050000" />
+      <workItem from="1583268857181" duration="1240000" />
+      <workItem from="1583309856684" duration="4373000" />
+      <workItem from="1583415501138" duration="2221000" />
     </task>
     <servers />
   </component>
