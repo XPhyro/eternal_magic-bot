@@ -115,7 +115,7 @@ def solve_linear(initial_mat):
         combination += 1
 
 
-def solve_mp_div(initial_mat, queue):
+def solve_mp(initial_mat, queue):
     max_combination = 2 ** (len(initialMat) * len(initialMat[0]))
 
     is_solved = mp.Event()
@@ -124,18 +124,19 @@ def solve_mp_div(initial_mat, queue):
     process_count = os.cpu_count()
 
     for i in range(process_count):
-        p = mp.Process(target=try_combinations,
-                       args=(initial_mat, max_combination, i, process_count, is_solved, queue))
+        p = mp.Process(target=try_combinations, args=(initial_mat, max_combination, i, process_count, is_solved, queue))
         p.start()
-        p.join()
+#        p.join()
         processes.append(p)
+
+    for p in processes:
+        p.join()
 
     is_solved.wait()
 
     for i in processes:
         i.kill()
-        # i.terminate()
-
+#        i.terminate()
 
 def print_solution(solution, x_size, queue=None):
     global computationStartTime
@@ -149,13 +150,15 @@ def print_solution(solution, x_size, queue=None):
     rows = [solution[i:i + x_size] for i in range(0, len(solution), x_size)]
 
     print("\n\nMulti-line solution: ")
-    print('\n'.join(rows))
+#    print('\n'.join(rows))
+#    print('\n'.join([' '.join(i) for i in rows]))
+    print('\n'.join([' '.join(i) + f"\t{i}" for i in rows]))
     print("\nSingle-line solution:")
     print(' '.join(rows))
 
-    print(f"\nStart time: {computationStartTime}")
-    print(f"End time: {end_time}")
-    print(f"Time taken: {time_taken}")
+    print(f"\nStart time:\t{computationStartTime}s")
+    print(f"End time:\t{end_time}s")
+    print(f"Time taken:\t{time_taken}s")
 
 
 if __name__ == "__main__":
@@ -178,7 +181,7 @@ if __name__ == "__main__":
         if s == "mp":
             q = mp.Queue()
             q.put(time.time())
-            solve_mp_div(initialMat, q)
+            solve_mp(initialMat, q)
 
         s = input("\nWould you like to solve another puzzle? (y/n)\n> ").lower()
         while s != "y" and s != "n" and s != "yes" and s != "no":
