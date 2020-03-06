@@ -24,7 +24,7 @@ def get_mat(x_size, y_size, msg):
     if x_size <= 0 or y_size <= 0:
         return []
 
-    size = x_size * ySize
+    size = x_size * y_size
     s = ""
 
     print(msg)
@@ -47,6 +47,7 @@ def get_mat(x_size, y_size, msg):
 def trigger_node(mat, coord):
     y_size = len(mat)
     x_size = len(mat[0])
+    size = x_size * y_size
 
     flat_mat = [j for i in mat for j in i]
     coords_to_toggle = [coord, coord - x_size, coord + x_size]
@@ -56,7 +57,7 @@ def trigger_node(mat, coord):
         coords_to_toggle.append(coord + 1)
 
     for i in coords_to_toggle:
-        if 0 <= i < y_size * x_size:
+        if 0 <= i < size:
             flat_mat[i] = not flat_mat[i]
     for i in range(y_size):
         for j in range(x_size):
@@ -144,11 +145,13 @@ def print_solution(solution, x_size, queue=None):
 
     end_time = time.time()
     time_taken = end_time - computationStartTime
+    
+    rows = [solution[i:i + x_size] for i in range(0, len(solution), x_size)]
 
     print("\n\nMulti-line solution: ")
-    print('\n'.join(solution[i:i + x_size] for i in range(0, len(solution), x_size)))
+    print('\n'.join(rows))
     print("\nSingle-line solution:")
-    print(' '.join(solution[i:i + x_size] for i in range(0, len(solution), x_size)))
+    print(' '.join(rows))
 
     print(f"\nStart time: {computationStartTime}")
     print(f"End time: {end_time}")
@@ -182,5 +185,6 @@ if __name__ == "__main__":
             s = input("You have entered an invalid option.\n> ").lower()
 
         if s[0] == 'n':
-            input("Press enter to exit...")
+            input("\nPress enter to exit...")
             break
+
