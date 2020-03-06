@@ -86,13 +86,14 @@ def try_solution(current_mat, combination):
 def try_combinations(initial_mat, max_combination, offset, increment, solved, queue):
     x_size = len(initial_mat[0])
     i = offset
-    while i <= max_combination and not solved.is_set():
+    while i <= max_combination: 
         current_mat = copy.deepcopy(initial_mat)
         binary_combination = try_solution(current_mat, i)
 
         if is_solved(current_mat):
             solved.set()
             print_solution(binary_combination[::-1], x_size, queue)
+            break
         i += increment
 
 
@@ -141,10 +142,11 @@ def solve_mp(initial_mat, queue):
 def print_solution(solution, x_size, queue=None):
     global computationStartTime
 
+    end_time = time.time()
+
     if queue is not None:
         computationStartTime = queue.get()
 
-    end_time = time.time()
     time_taken = end_time - computationStartTime
     
     rows = [solution[i:i + x_size] for i in range(0, len(solution), x_size)]
