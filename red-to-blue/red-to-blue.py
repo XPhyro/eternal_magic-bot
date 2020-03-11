@@ -134,6 +134,8 @@ def solve_linear(initial_mat):
 
             break
 
+        combination += 1
+
 
 def print_solution(solution, x_size, queue=None):
     global computationStartTime
