@@ -87,7 +87,7 @@ def update():
 gameWildcard = "Eternal Magic -Andromeda"
 initiateShortcut = "shift+ctrl+alt+s"
 stopShortcut = "alt+shift+d"
-clickInterval = "45"  # Must be a positive integer
+clickInterval = 45  # Must be a positive integer
 
 print("Press {} to initiate.".format(initiateShortcut))
 keyboard.wait(initiateShortcut)
