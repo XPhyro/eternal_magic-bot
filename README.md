@@ -10,6 +10,8 @@ You can use finance.py to automatically go to the next finance quest NPC while y
 # *red-to-blue*
 You can use red-to-blue.py to solve the red-to-blue puzzles in the instance named "Twins Room", in which you can enter by doing plague investigations or shrines, ie. stars, that are scattered around the different maps.
 
+For a demo of how this puzzle works, see [this video](https://youtu.be/shF_2281y_s).
+
 # Usage
 This project is written and tested with Python 3.7.6. To get the best results, it is recommended that you use the tested version.
 
