@@ -35,10 +35,10 @@ def get_mat(x_size, y_size, msg):
             s += r
 
     m = re.findall('.' * x_size, s)
-    for i in range(len(m)):
-        c = [j for j in m[i]]
-        for j in range(len(c)):
-            c[j] = c[j] == '1'
+    for i, j in enumerate(m):
+        c = [k for k in j]
+        for k, w in enumerate(c):
+            c[k] = w == '1'
         m[i] = c
 
     return m
@@ -76,8 +76,8 @@ def try_solution(current_mat, combination):
 
     trigger_map = binary_combination[::-1]
 
-    for i in range(len(trigger_map)):
-        if trigger_map[i] == '1':
+    for i, j in enumerate(trigger_map):
+        if j == '1':
             trigger_node(current_mat, i)
 
     return binary_combination
@@ -118,7 +118,7 @@ def solve_mp(initial_mat, queue):
 #        i.terminate()
 
 
-def solve_linear(initial_mat):
+def solve_linear(initial_mat, queue):
     x_size = len(initial_mat[0])
     max_combination = 2 ** (len(initialMat) * x_size)
     combination = 0
@@ -130,22 +130,18 @@ def solve_linear(initial_mat):
 
         if is_solved(current_mat):
             s = binary_combination[::-1]
-            print_solution(s, x_size)
+            print_solution(s, x_size, queue)
 
             break
 
         combination += 1
 
 
-def print_solution(solution, x_size, queue=None):
-    global computationStartTime
-
+def print_solution(solution, x_size, queue):
+    start_time = queue.get()
     end_time = time.time()
 
-    if queue is not None:
-        computationStartTime = queue.get()
-
-    time_taken = end_time - computationStartTime
+    time_taken = end_time - start_time
     
     rows = [solution[i:i + x_size] for i in range(0, len(solution), x_size)]
 
@@ -156,14 +152,14 @@ def print_solution(solution, x_size, queue=None):
     print("\nSingle-line solution:")
     print(' '.join(rows))
 
-    print(f"\nStart time:\t{computationStartTime}s")
+    print(f"\nStart time:\t{start_time}s")
     print(f"End time:\t{end_time}s")
     print(f"Time taken:\t{time_taken}s")
 
 
 if __name__ == "__main__":
     mp.freeze_support()
-
+    
     while True:
         s = input("Enter a method of solution. (lin, mp)\n> ").lower()
         while s != "lin" and s != "mp":
@@ -175,12 +171,11 @@ if __name__ == "__main__":
 
         print("\nSolving...", end='')
 
+        q = mp.Queue()
+        q.put(time.time())
         if s == "lin":
-            computationStartTime = time.time()
-            solve_linear(initialMat)
+            solve_linear(initialMat, q)
         if s == "mp":
-            q = mp.Queue()
-            q.put(time.time())
             solve_mp(initialMat, q)
 
         s = input("\nWould you like to solve another puzzle? (y/n)\n> ").lower()
@@ -190,4 +185,3 @@ if __name__ == "__main__":
         if s[0] == 'n':
             input("\nPress enter to exit...")
             break
-
