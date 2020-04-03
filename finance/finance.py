@@ -37,12 +37,16 @@ def initialise():
     game_window.find_window_wildcard(gameWildcard)
 
     if game_window.handle is None:
-        print("\nUhm, would you, maybe, like to start the game first? "
-              "Like I'm a bot made for Eternal Magic, you know that right?")
+        print(
+            "\nUhm, would you, maybe, like to start the game first? "
+            "Like I'm a bot made for Eternal Magic, you know that right?"
+        )
         while game_window.handle is None:
             game_window.find_window_wildcard(gameWildcard)
             time.sleep(0.5)
-        print("Oh it seems you finally started the game, I\'ll give you another chance then.\n")
+        print(
+            "Oh it seems you finally started the game, I'll give you another chance then.\n"
+        )
         print("Press {} again.".format(initiateShortcut))
         keyboard.wait(initiateShortcut)
 
